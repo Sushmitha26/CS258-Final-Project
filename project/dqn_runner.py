@@ -60,7 +60,7 @@ def train_dqn(train_files, capacity, save_prefix, timesteps=200_000):
     model = DQN(
         "MultiInputPolicy",
         env,
-        learning_rate=5e-4,
+        learning_rate=1e-3,
         batch_size=64,
         buffer_size=110_000,
         learning_starts=1_000,
