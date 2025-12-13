@@ -4,7 +4,11 @@ import matplotlib.pyplot as plt
 
 from stable_baselines3 import DQN
 from stable_baselines3.common.monitor import Monitor
-from stable_baselines3.common.callbacks import BaseCallback
+from stable_baselines3.common.callbacks import (
+    BaseCallback,
+    CheckpointCallback,
+    EvalCallback,
+)
 
 from rsaenv import RSAEnv
 
@@ -28,7 +32,6 @@ class EpisodeLogger(BaseCallback):
         self.ep_block_rates = []
 
     def _on_step(self) -> bool:
-        # Reward logging
         infos = self.locals.get("infos", [])
         dones = self.locals.get("dones", [])
 
@@ -43,11 +46,18 @@ class EpisodeLogger(BaseCallback):
 
 
 # ======================================================
-# Training Function
+# TRAINING FUNCTION (WITH CHECKPOINTING)
 # ======================================================
 def train_dqn(train_files, capacity, save_prefix, timesteps=200_000):
+
     print(f"\n===== TRAINING DQN (capacity={capacity}) =====\n")
 
+    # --- make sure folders exist ---
+    os.makedirs("models", exist_ok=True)
+    os.makedirs("checkpoints", exist_ok=True)
+    os.makedirs("best_models", exist_ok=True)
+
+    # --- Environment ---
     env = RSAEnv(
         request_files=train_files,
         link_capacity=capacity,
@@ -55,14 +65,45 @@ def train_dqn(train_files, capacity, save_prefix, timesteps=200_000):
     )
     env = Monitor(env)
 
-    callback = EpisodeLogger()
+    # --- Logging callback ---
+    episode_logger = EpisodeLogger()
 
+    # --- Checkpoint callback (save every 50k steps) ---
+    checkpoint_callback = CheckpointCallback(
+        save_freq=50_000,
+        save_path=f"checkpoints/{save_prefix}",
+        name_prefix="checkpoint",
+        save_replay_buffer=True,
+        save_vecnormalize=True,
+    )
+
+    # --- Best model callback (EvalCallback) ---
+    eval_env = RSAEnv(
+        request_files=train_files,
+        link_capacity=capacity,
+        shuffle_files=False  # deterministic eval
+    )
+    eval_env = Monitor(eval_env)
+
+    eval_callback = EvalCallback(
+        eval_env,
+        best_model_save_path=f"best_models/{save_prefix}",
+        log_path=f"best_models/{save_prefix}",
+        eval_freq=20_000,
+        deterministic=True,
+        render=False,
+    )
+
+    # --- Combine callbacks ---
+    callbacks = [episode_logger, checkpoint_callback, eval_callback]
+
+    # --- DQN Model ---
     model = DQN(
         "MultiInputPolicy",
         env,
         learning_rate=1e-3,
         batch_size=64,
-        buffer_size=110_000,
+        buffer_size=200_000,
         learning_starts=1_000,
         gamma=0.99,
         train_freq=1,
@@ -73,16 +114,18 @@ def train_dqn(train_files, capacity, save_prefix, timesteps=200_000):
         verbose=1,
     )
 
-    model.learn(total_timesteps=timesteps, callback=callback)
-    model.save(f"{save_prefix}.zip")
+    # --- TRAIN ---
+    model.learn(total_timesteps=timesteps, callback=callbacks)
 
-    print(f"Model saved as {save_prefix}.zip")
+    # Save final model
+    model.save(f"models/{save_prefix}.zip")
+    print(f"Final model saved to models/{save_prefix}.zip")
 
-    return callback.ep_rewards, callback.ep_block_rates
+    return episode_logger.ep_rewards, episode_logger.ep_block_rates
 
 
 # ======================================================
-# Evaluation Function (deterministic=True)
+# EVALUATION FUNCTION (deterministic=True)
 # ======================================================
 def evaluate_model(model_file, eval_files, capacity, episodes=10):
     print(f"\n===== EVALUATING {model_file} =====\n")
@@ -114,7 +157,7 @@ def evaluate_model(model_file, eval_files, capacity, episodes=10):
 
 
 # ======================================================
-# Plotting Function
+# PLOT FUNCTION
 # ======================================================
 def plot_curves(rewards, blocks, tag):
     os.makedirs("plots", exist_ok=True)
@@ -143,7 +186,7 @@ def plot_curves(rewards, blocks, tag):
 
 
 # ======================================================
-# MAIN EXECUTION
+# MAIN
 # ======================================================
 if __name__ == "__main__":
 
@@ -153,9 +196,9 @@ if __name__ == "__main__":
     train_files = [os.path.join(train_dir, f) for f in os.listdir(train_dir)]
     eval_files  = [os.path.join(eval_dir, f) for f in os.listdir(eval_dir)]
 
-    # ----------------------------------------------------
-    # PART 1: CAPACITY = 20
-    # ----------------------------------------------------
+    # -------------------------
+    # CAPACITY = 20
+    # -------------------------
     r20, b20 = train_dqn(
         train_files=train_files,
         capacity=20,
@@ -164,11 +207,15 @@ if __name__ == "__main__":
     )
     plot_curves(r20, b20, "cap20")
 
-    eval_B20 = evaluate_model("rsa_dqn_cap20", eval_files, capacity=20)
+    eval_B20 = evaluate_model(
+        "models/rsa_dqn_cap20.zip",
+        eval_files,
+        capacity=20
+    )
 
-    # ----------------------------------------------------
-    # PART 2: CAPACITY = 10
-    # ----------------------------------------------------
+    # -------------------------
+    # CAPACITY = 10
+    # -------------------------
     r10, b10 = train_dqn(
         train_files=train_files,
         capacity=10,
@@ -177,6 +224,10 @@ if __name__ == "__main__":
     )
     plot_curves(r10, b10, "cap10")
 
-    eval_B10 = evaluate_model("rsa_dqn_cap10", eval_files, capacity=10)
+    eval_B10 = evaluate_model(
+        "models/rsa_dqn_cap10.zip",
+        eval_files,
+        capacity=10
+    )
 
     print("\n===== DONE =====\n")
