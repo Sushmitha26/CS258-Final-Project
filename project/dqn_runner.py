@@ -53,11 +53,12 @@ def train_dqn(train_files, capacity, save_prefix, timesteps=200_000):
     print(f"\n===== TRAINING DQN (capacity={capacity}) =====\n")
 
     # --- make sure folders exist ---
-    os.makedirs("models", exist_ok=True)
-    os.makedirs("checkpoints", exist_ok=True)
-    os.makedirs("best_models", exist_ok=True)
+    os.makedirs("results/models", exist_ok=True)
+    os.makedirs("results/checkpoints", exist_ok=True)
+    os.makedirs("results/best_models", exist_ok=True)
+    os.makedirs("results/plots", exist_ok=True)
 
-    # --- Environment ---
+    # --- Env ---
     env = RSAEnv(
         request_files=train_files,
         link_capacity=capacity,
@@ -65,39 +66,37 @@ def train_dqn(train_files, capacity, save_prefix, timesteps=200_000):
     )
     env = Monitor(env)
 
-    # --- Logging callback ---
     episode_logger = EpisodeLogger()
 
-    # --- Checkpoint callback (save every 50k steps) ---
+    # --- Checkpoint callback ---
     checkpoint_callback = CheckpointCallback(
         save_freq=50_000,
-        save_path=f"checkpoints/{save_prefix}",
+        save_path=f"results/checkpoints/{save_prefix}",
         name_prefix="checkpoint",
         save_replay_buffer=True,
         save_vecnormalize=True,
     )
 
-    # --- Best model callback (EvalCallback) ---
+    # --- Best model callback ---
     eval_env = RSAEnv(
         request_files=train_files,
         link_capacity=capacity,
-        shuffle_files=False  # deterministic eval
+        shuffle_files=False
     )
     eval_env = Monitor(eval_env)
 
     eval_callback = EvalCallback(
         eval_env,
-        best_model_save_path=f"best_models/{save_prefix}",
-        log_path=f"best_models/{save_prefix}",
+        best_model_save_path=f"results/best_models/{save_prefix}",
+        log_path=f"results/best_models/{save_prefix}",
         eval_freq=20_000,
         deterministic=True,
         render=False,
     )
 
-    # --- Combine callbacks ---
     callbacks = [episode_logger, checkpoint_callback, eval_callback]
 
-    # --- DQN Model ---
+    # --- DQN ---
     model = DQN(
         "MultiInputPolicy",
         env,
@@ -118,14 +117,14 @@ def train_dqn(train_files, capacity, save_prefix, timesteps=200_000):
     model.learn(total_timesteps=timesteps, callback=callbacks)
 
     # Save final model
-    model.save(f"models/{save_prefix}.zip")
-    print(f"Final model saved to models/{save_prefix}.zip")
+    model.save(f"results/models/{save_prefix}.zip")
+    print(f"Final model saved to results/models/{save_prefix}.zip")
 
     return episode_logger.ep_rewards, episode_logger.ep_block_rates
 
 
 # ======================================================
-# EVALUATION FUNCTION (deterministic=True)
+# EVALUATION FUNCTION
 # ======================================================
 def evaluate_model(model_file, eval_files, capacity, episodes=10):
     print(f"\n===== EVALUATING {model_file} =====\n")
@@ -157,10 +156,10 @@ def evaluate_model(model_file, eval_files, capacity, episodes=10):
 
 
 # ======================================================
-# PLOT FUNCTION
+# PLOTTING FUNCTION
 # ======================================================
 def plot_curves(rewards, blocks, tag):
-    os.makedirs("plots", exist_ok=True)
+    os.makedirs("results/plots", exist_ok=True)
 
     # Learning curve
     plt.figure(figsize=(6,4))
@@ -169,7 +168,7 @@ def plot_curves(rewards, blocks, tag):
     plt.xlabel("Episode")
     plt.ylabel("Avg Reward (10-ep MA)")
     plt.grid(True)
-    plt.savefig(f"plots/{tag}_learning_curve.png")
+    plt.savefig(f"results/plots/{tag}_learning_curve.png")
     plt.close()
 
     # Blocking curve
@@ -179,55 +178,8 @@ def plot_curves(rewards, blocks, tag):
     plt.xlabel("Episode")
     plt.ylabel("Avg Blocking Rate B (10-ep MA)")
     plt.grid(True)
-    plt.savefig(f"plots/{tag}_blocking_curve.png")
+    plt.savefig(f"results/plots/{tag}_blocking_curve.png")
     plt.close()
 
-    print(f"Saved plots → plots/{tag}_*.png")
+    print(f"Saved plots → results/plots/{tag}_*.png")
 
-
-# ======================================================
-# MAIN
-# ======================================================
-if __name__ == "__main__":
-
-    train_dir = "data/train"
-    eval_dir  = "data/eval"
-
-    train_files = [os.path.join(train_dir, f) for f in os.listdir(train_dir)]
-    eval_files  = [os.path.join(eval_dir, f) for f in os.listdir(eval_dir)]
-
-    # -------------------------
-    # CAPACITY = 20
-    # -------------------------
-    r20, b20 = train_dqn(
-        train_files=train_files,
-        capacity=20,
-        save_prefix="rsa_dqn_cap20",
-        timesteps=400_000,
-    )
-    plot_curves(r20, b20, "cap20")
-
-    eval_B20 = evaluate_model(
-        "models/rsa_dqn_cap20.zip",
-        eval_files,
-        capacity=20
-    )
-
-    # -------------------------
-    # CAPACITY = 10
-    # -------------------------
-    r10, b10 = train_dqn(
-        train_files=train_files,
-        capacity=10,
-        save_prefix="rsa_dqn_cap10",
-        timesteps=400_000,
-    )
-    plot_curves(r10, b10, "cap10")
-
-    eval_B10 = evaluate_model(
-        "models/rsa_dqn_cap10.zip",
-        eval_files,
-        capacity=10
-    )
-
-    print("\n===== DONE =====\n")
