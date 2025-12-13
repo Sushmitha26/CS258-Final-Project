@@ -14,10 +14,11 @@ def ensure_dir(path):
 
 if __name__ == "__main__":
 
-    ensure_dir("multi_run_results")
-    ensure_dir("models")         # <-- REQUIRED for saving final models
-    ensure_dir("checkpoints")    # <-- OPTIONAL: good practice
-    ensure_dir("best_models")    # <-- OPTIONAL: eval callback saves here
+    ensure_dir("results/multi_run")
+    ensure_dir("results/models")
+    ensure_dir("results/checkpoints")
+    ensure_dir("results/best_models")
+    ensure_dir("results/plots")
 
     train_dir = "data/train"
     eval_dir  = "data/eval"
@@ -46,7 +47,7 @@ if __name__ == "__main__":
         plot_curves(r20, b20, f"cap20_{tag}")
 
         eval_B20 = evaluate_model(
-            f"models/rsa_dqn_cap20_{tag}.zip",   # <-- Correct path
+            f"results/models/rsa_dqn_cap20_{tag}.zip",
             eval_files,
             capacity=20,
             episodes=10
@@ -64,7 +65,7 @@ if __name__ == "__main__":
         plot_curves(r10, b10, f"cap10_{tag}")
 
         eval_B10 = evaluate_model(
-            f"models/rsa_dqn_cap10_{tag}.zip",   # <-- Correct path
+            f"results/models/rsa_dqn_cap10_{tag}.zip",
             eval_files,
             capacity=10,
             episodes=10
@@ -76,12 +77,12 @@ if __name__ == "__main__":
 
 
     # =======================
-    # Save Summary CSV
+    # SAVE SUMMARY CSV
     # =======================
-    with open("multi_run_results/summary.csv", "w", newline="") as f:
+    with open("results/multi_run/summary.csv", "w", newline="") as f:
         writer = csv.writer(f)
         writer.writerow(["Run", "Cap20_BlockingRate", "Cap10_BlockingRate"])
         writer.writerows(summary_rows)
 
-    print("\nAll 10 runs are complete!")
-    print("Summary saved to multi_run_results/summary.csv")
+    print("\nAll 10 runs complete!")
+    print("Summary saved to results/multi_run/summary.csv")
