@@ -12,19 +12,17 @@ from stable_baselines3.common.callbacks import (
 
 from rsaenv import RSAEnv
 
+# Moving Average
 
-# ======================================================
-# Utility: Moving Average
-# ======================================================
 def moving_average(arr, window=10):
     if len(arr) < window:
         return np.array(arr)
     return np.convolve(arr, np.ones(window)/window, mode="valid")
 
 
-# ======================================================
-# Episode Logger
-# ======================================================
+
+# Logging episodes
+
 class EpisodeLogger(BaseCallback):
     def __init__(self):
         super().__init__()
@@ -45,9 +43,8 @@ class EpisodeLogger(BaseCallback):
         return True
 
 
-# ======================================================
-# TRAINING FUNCTION
-# ======================================================
+# The training function
+
 def train_dqn(train_files, capacity, save_prefix, timesteps):
 
     print(f"\n===== TRAINING DQN (capacity={capacity}) =====\n")
@@ -116,9 +113,8 @@ def train_dqn(train_files, capacity, save_prefix, timesteps):
     return episode_logger.ep_rewards, episode_logger.ep_block_rates
 
 
-# ======================================================
-# EVALUATION FUNCTION (returns per-episode blocking rates)
-# ======================================================
+# The evaluation function 
+
 def evaluate_model(model_file, eval_files, capacity, episodes=10):
     print(f"\n===== EVALUATING {model_file} =====\n")
 
@@ -148,13 +144,12 @@ def evaluate_model(model_file, eval_files, capacity, episodes=10):
     return avg_B, blocking_rates   # NEW: return list for plotting
 
 
-# ======================================================
-# TRAINING PLOTS
-# ======================================================
+# function for plotting required curves
+
 def plot_curves(rewards, blocks, tag):
     os.makedirs("results/plots", exist_ok=True)
 
-    # Learning curve
+    #learning curve
     plt.figure(figsize=(6,4))
     plt.plot(moving_average(rewards, 10))
     plt.title(f"Learning Curve ({tag})")
@@ -177,9 +172,8 @@ def plot_curves(rewards, blocks, tag):
     print(f"Saved plots → results/plots/{tag}_*.png")
 
 
-# ======================================================
-# EVALUATION PLOT (REQUIRED FOR 6 PLOTS)
-# ======================================================
+# Eval plot 
+
 def plot_eval_curve(block_rates, tag):
     """Plot evaluation blocking curve (required by assignment)."""
     os.makedirs("results/plots", exist_ok=True)
