@@ -1,20 +1,20 @@
 # Routing and Spectrum Allocation using Deep Reinforcement Learning  
-**CS 258 Final Project – Fall 2025**
+**CS 258 Final Project – Group 12**
 
 ## Overview
-This project solves the **Routing and Spectrum Allocation (RSA)** problem in optical communication networks using **Deep Reinforcement Learning (DQN)**. The objective is to **minimize the request blocking rate** by selecting an available route (from predefined candidate paths) and allocating wavelengths subject to:
+This project solves the **Routing and Spectrum Allocation (RSA)** problem in optical communication networks using **Deep Reinforcement Learning (DQN)**. The objective is to **minimize the request blocking rate** by selecting an available route (from predefined candidate paths) and allocating wavelengths according to:
 
-- wavelength continuity along the path  
+- wavelength continuity 
 - link capacity constraints  
 - no wavelength conflicts on a link  
-- smallest-index wavelength (color) allocation  
+- smallest index wavelength allocation  
 
-We evaluate performance under two link-capacity settings:
+We evaluate performance under two link capacity settings:
 
 - **Part 1:** capacity = 20  
 - **Part 2:** capacity = 10  
 
-We perform **systematic hyperparameter tuning** using **Optuna** (Bayesian optimization with a TPE sampler), running **80 trials**, and then select the best hyperparameter combination based on the **lowest mean blocking rate**.
+We further perform **systematic hyperparameter tuning** using **Optuna**, running **80 trials**, and then select the best hyperparameter combination based on the **lowest mean blocking rate**.
 
 ---
 
@@ -70,18 +70,18 @@ A dictionary with:
 
 ### Action
 Discrete action space of size **2**:
-- action chooses one of the two candidate paths for the given (source, destination)
+- action chooses one of the two candidate paths for the source, destination
 
 ### Reward
-- **+1** if request is allocated successfully
-- **-1** if request is blocked
+- **+1** in case request is being allocated successfully
+- **-1** in case of request being blocked
 
-### Time-slot dynamics
+### Time slot dynamics
 At each step:
 1. existing lightpaths age by one time slot and expired wavelengths are freed  
 2. a new request arrives  
 3. agent selects a candidate path  
-4. smallest-index wavelength that is free on **all links of the path** is allocated, otherwise the request is blocked  
+4. smallest index wavelength that is free on **all links of the path** is allocated, otherwise the request is blocked  
 
 ---
 
@@ -91,7 +91,7 @@ At each step:
 
 ### 1) Hyperparameter tuning (Optuna) — run first
 
-This performs **80 Optuna trials** on **capacity = 10**. Each configuration is evaluated over multiple runs and the **mean blocking rate** is used as the objective.
+This performs **80 Optuna trials** on **capacity = 10**. Each configuration is evaluated over multiple runs and the **mean blocking rate** is used as the parameter to select the best trial configuration.
 
 ```bash
 python optuna_tune.py
@@ -104,13 +104,13 @@ python optuna_tune.py
   ```
 - Console logs show each trial’s hyperparameters and mean ± std blocking rate
 
-After tuning finishes, the **best hyperparameter combination** (lowest mean blocking rate) is selected and copied into `dqn_runner.py`.
+After tuning finishes, the **best hyperparameter combination** (lowest mean blocking rate) is selected and then further taken by `dqn_runner.py`.
 
 ---
 
 ### 2) Multi-run final experiment (10 runs)
 
-This script runs **10 independent training runs** using the tuned hyperparameters and evaluates performance for both capacities.
+This script further runs **10 training runs** using the tuned hyperparameters and evaluates performance for both capacities. (10 and 20)
 
 ```bash
 python multi_run_runner.py
@@ -172,7 +172,6 @@ Blocking rates are reported as **fractions** (e.g., 0.03 = 3%).
 ## Notes on Data Usage
 - Training uses files only from `data/train/`
 - Evaluation uses files only from `data/eval/`
-- No evaluation files are used during training or tuning
 
 ---
 
@@ -191,4 +190,5 @@ Blocking rates are reported as **fractions** (e.g., 0.03 = 3%).
 - A. Asiri and B. Wang, *Deep Reinforcement Learning for QoT-Aware Routing, Modulation, and Spectrum Assignment in Elastic Optical Networks*, Journal of Lightwave Technology, 2025.  
 - Stable-Baselines3 documentation  
 - Optuna documentation
+
 
