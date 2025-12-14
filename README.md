@@ -1,7 +1,7 @@
 # Routing and Spectrum Allocation using DRL (Deep Reinforcement Learning)
 **CS 258 Final Project – TEAM 12**
 
-## Overview
+## A brief overview 
 This project solves the **Routing and Spectrum Allocation (RSA)** problem in optical communication networks using **Deep Reinforcement Learning (DQN)**. The objective is to **minimize the request blocking rate** by selecting an available route (from predefined candidate paths) and allocating wavelengths according to:
 
 - wavelength continuity along the path  
@@ -206,4 +206,5 @@ Below are the **six required plots** (three per capacity setting). All plots are
 - A. Asiri and B. Wang, “Deep Reinforcement Learning for QoT-Aware Routing, Modulation, and Spectrum Assignment in Elastic Optical Networks,” *JLT*, 2025.  
 - Stable-Baselines3 documentation  
 - Optuna documentation
+
 
