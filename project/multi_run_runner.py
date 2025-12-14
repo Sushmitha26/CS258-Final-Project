@@ -1,7 +1,7 @@
 import os
 import csv
 
-from dqn_runner import train_dqn, evaluate_model, plot_curves
+from dqn_runner import train_dqn, evaluate_model, plot_curves, plot_eval_curve
 
 
 NUM_RUNS = 10
@@ -29,15 +29,16 @@ if __name__ == "__main__":
     summary_rows = []
 
     for run in range(1, NUM_RUNS + 1):
+
         print(f"\n======================")
         print(f"   RUN {run}/{NUM_RUNS}")
         print(f"======================\n")
 
         tag = f"run{run}"
 
-        # -------------------------
+        # ==================================================
         # CAPACITY = 20
-        # -------------------------
+        # ==================================================
         r20, b20 = train_dqn(
             train_files=train_files,
             capacity=20,
@@ -46,16 +47,17 @@ if __name__ == "__main__":
         )
         plot_curves(r20, b20, f"cap20_{tag}")
 
-        eval_B20 = evaluate_model(
+        eval_B20, eval_curve20 = evaluate_model(
             f"results/models/rsa_dqn_cap20_{tag}.zip",
             eval_files,
             capacity=20,
             episodes=10
         )
+        plot_eval_curve(eval_curve20, f"cap20_{tag}")
 
-        # -------------------------
+        # ==================================================
         # CAPACITY = 10
-        # -------------------------
+        # ==================================================
         r10, b10 = train_dqn(
             train_files=train_files,
             capacity=10,
@@ -64,21 +66,22 @@ if __name__ == "__main__":
         )
         plot_curves(r10, b10, f"cap10_{tag}")
 
-        eval_B10 = evaluate_model(
+        eval_B10, eval_curve10 = evaluate_model(
             f"results/models/rsa_dqn_cap10_{tag}.zip",
             eval_files,
             capacity=10,
             episodes=10
         )
+        plot_eval_curve(eval_curve10, f"cap10_{tag}")
 
         summary_rows.append([run, eval_B20, eval_B10])
 
-        print(f"Run {run} summary: cap20={eval_B20:.4f}, cap10={eval_B10:.4f}")
+        print(f"Run {run} summary:  cap20={eval_B20:.4f},  cap10={eval_B10:.4f}")
 
 
-    # =======================
+    # ==================================================
     # SAVE SUMMARY CSV
-    # =======================
+    # ==================================================
     with open("results/multi_run/summary.csv", "w", newline="") as f:
         writer = csv.writer(f)
         writer.writerow(["Run", "Cap20_BlockingRate", "Cap10_BlockingRate"])

@@ -14,7 +14,7 @@ from rsaenv import RSAEnv
 
 
 # ======================================================
-# Utility: Moving Average for Plot Smoothening
+# Utility: Moving Average
 # ======================================================
 def moving_average(arr, window=10):
     if len(arr) < window:
@@ -23,7 +23,7 @@ def moving_average(arr, window=10):
 
 
 # ======================================================
-# Callback to record metrics each episode
+# Episode Logger
 # ======================================================
 class EpisodeLogger(BaseCallback):
     def __init__(self):
@@ -46,19 +46,17 @@ class EpisodeLogger(BaseCallback):
 
 
 # ======================================================
-# TRAINING FUNCTION (WITH CHECKPOINTING)
+# TRAINING FUNCTION
 # ======================================================
-def train_dqn(train_files, capacity, save_prefix, timesteps=200_000):
+def train_dqn(train_files, capacity, save_prefix, timesteps):
 
     print(f"\n===== TRAINING DQN (capacity={capacity}) =====\n")
 
-    # --- make sure folders exist ---
     os.makedirs("results/models", exist_ok=True)
     os.makedirs("results/checkpoints", exist_ok=True)
     os.makedirs("results/best_models", exist_ok=True)
     os.makedirs("results/plots", exist_ok=True)
 
-    # --- Env ---
     env = RSAEnv(
         request_files=train_files,
         link_capacity=capacity,
@@ -68,7 +66,6 @@ def train_dqn(train_files, capacity, save_prefix, timesteps=200_000):
 
     episode_logger = EpisodeLogger()
 
-    # --- Checkpoint callback ---
     checkpoint_callback = CheckpointCallback(
         save_freq=50_000,
         save_path=f"results/checkpoints/{save_prefix}",
@@ -77,7 +74,6 @@ def train_dqn(train_files, capacity, save_prefix, timesteps=200_000):
         save_vecnormalize=True,
     )
 
-    # --- Best model callback ---
     eval_env = RSAEnv(
         request_files=train_files,
         link_capacity=capacity,
@@ -96,27 +92,24 @@ def train_dqn(train_files, capacity, save_prefix, timesteps=200_000):
 
     callbacks = [episode_logger, checkpoint_callback, eval_callback]
 
-    # --- DQN ---
     model = DQN(
         "MultiInputPolicy",
         env,
-        learning_rate=1e-3,
+        learning_rate=0.00036217772737752896,
         batch_size=64,
         buffer_size=200_000,
         learning_starts=1_000,
-        gamma=0.99,
+        gamma=0.9806384345581519,
         train_freq=1,
         target_update_interval=500,
-        exploration_fraction=0.3,
+        exploration_fraction=0.28715964514368547,
         exploration_initial_eps=1.0,
         exploration_final_eps=0.05,
         verbose=1,
     )
 
-    # --- TRAIN ---
     model.learn(total_timesteps=timesteps, callback=callbacks)
 
-    # Save final model
     model.save(f"results/models/{save_prefix}.zip")
     print(f"Final model saved to results/models/{save_prefix}.zip")
 
@@ -124,7 +117,7 @@ def train_dqn(train_files, capacity, save_prefix, timesteps=200_000):
 
 
 # ======================================================
-# EVALUATION FUNCTION
+# EVALUATION FUNCTION (returns per-episode blocking rates)
 # ======================================================
 def evaluate_model(model_file, eval_files, capacity, episodes=10):
     print(f"\n===== EVALUATING {model_file} =====\n")
@@ -152,11 +145,11 @@ def evaluate_model(model_file, eval_files, capacity, episodes=10):
     avg_B = float(np.mean(blocking_rates))
     print(f"[RESULT] Average Blocking Rate B = {avg_B:.4f}")
 
-    return avg_B
+    return avg_B, blocking_rates   # NEW: return list for plotting
 
 
 # ======================================================
-# PLOTTING FUNCTION
+# TRAINING PLOTS
 # ======================================================
 def plot_curves(rewards, blocks, tag):
     os.makedirs("results/plots", exist_ok=True)
@@ -183,3 +176,21 @@ def plot_curves(rewards, blocks, tag):
 
     print(f"Saved plots → results/plots/{tag}_*.png")
 
+
+# ======================================================
+# EVALUATION PLOT (REQUIRED FOR 6 PLOTS)
+# ======================================================
+def plot_eval_curve(block_rates, tag):
+    """Plot evaluation blocking curve (required by assignment)."""
+    os.makedirs("results/plots", exist_ok=True)
+
+    plt.figure(figsize=(6,4))
+    plt.plot(block_rates)
+    plt.title(f"Eval Blocking Curve ({tag})")
+    plt.xlabel("Episode")
+    plt.ylabel("Blocking Rate B")
+    plt.grid(True)
+    plt.savefig(f"results/plots/{tag}_eval_blocking_curve.png")
+    plt.close()
+
+    print(f"Saved eval plot → results/plots/{tag}_eval_blocking_curve.png")
