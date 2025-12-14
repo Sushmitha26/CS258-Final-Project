@@ -157,9 +157,9 @@ results/plots/
 
 Blocking rate per episode:
 
-\[
+$$
 B = \frac{1}{T} \sum_{t=0}^{T-1} b_t
-\]
+$$
 
 where:
 - \(b_t = 1\) if request \(t\) is blocked, else 0  
@@ -191,3 +191,4 @@ Blocking rates are reported as **fractions** (e.g., 0.03 = 3%).
 - A. Asiri and B. Wang, *Deep Reinforcement Learning for QoT-Aware Routing, Modulation, and Spectrum Assignment in Elastic Optical Networks*, Journal of Lightwave Technology, 2025.  
 - Stable-Baselines3 documentation  
 - Optuna documentation
+
