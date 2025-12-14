@@ -1,4 +1,4 @@
-# Routing and Spectrum Allocation using Deep Reinforcement Learning  
+# Routing and Spectrum Allocation using Deep Reinforcement Learning  (DRL)
 **CS 258 Final Project – Group 12**
 
 ## Overview
@@ -190,5 +190,6 @@ Blocking rates are reported as **fractions** (e.g., 0.03 = 3%).
 - A. Asiri and B. Wang, *Deep Reinforcement Learning for QoT-Aware Routing, Modulation, and Spectrum Assignment in Elastic Optical Networks*, Journal of Lightwave Technology, 2025.  
 - Stable-Baselines3 documentation  
 - Optuna documentation
+
 
 
