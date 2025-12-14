@@ -9,17 +9,17 @@ from stable_baselines3.common.monitor import Monitor
 
 from rsaenv import RSAEnv
 
-# ======================================================
-# OPTUNA LOGGING
-# ======================================================
+
+# Optune logging
+
 optuna.logging.set_verbosity(optuna.logging.INFO)
 
-# ======================================================
-# GLOBAL CONFIG
-# ======================================================
+
+# Global config
+
 CAPACITY = 10
-TIMESTEPS = 150_000          # fast enough for tuning
-N_TRIALS = 80                # ~8 hrs total
+TIMESTEPS = 150_000          
+N_TRIALS = 80                
 N_RUNS_PER_TRIAL = 5
 
 RESULT_DIR = "results/optuna"
@@ -31,9 +31,9 @@ EVAL_DIR  = "data/eval"
 TRAIN_FILES = [os.path.join(TRAIN_DIR, f) for f in os.listdir(TRAIN_DIR)]
 EVAL_FILES  = [os.path.join(EVAL_DIR, f) for f in os.listdir(EVAL_DIR)]
 
-# ======================================================
+
 # TRAIN + EVAL FUNCTION
-# ======================================================
+
 def train_and_eval(params, seed, tag):
 
     np.random.seed(seed)
@@ -65,7 +65,7 @@ def train_and_eval(params, seed, tag):
     model.learn(total_timesteps=TIMESTEPS)
     model.save(f"results/models/{tag}.zip")
 
-    # ---------- Evaluation ----------
+    # evaluation
     eval_env = RSAEnv(
         request_files=EVAL_FILES,
         link_capacity=CAPACITY,
@@ -84,13 +84,11 @@ def train_and_eval(params, seed, tag):
 
     return float(np.mean(blocking_rates))
 
+# Optuna objective
 
-# ======================================================
-# OPTUNA OBJECTIVE
-# ======================================================
 def objective(trial):
 
-    # 👇 INCLUDE YOUR WORKING CONFIG AS CENTER
+    # defining ranges
     params = {
         "learning_rate": trial.suggest_float(
             "learning_rate", 3e-4, 1e-3, log=True
@@ -128,7 +126,7 @@ def objective(trial):
 
     print(f"Mean blocking rate = {mean_B:.4f} ± {std_B:.4f}")
 
-    # ---------- Save CSV ----------
+    # saving csv
     csv_path = os.path.join(RESULT_DIR, "optuna_results.csv")
     write_header = not os.path.exists(csv_path)
 
@@ -152,10 +150,8 @@ def objective(trial):
 
     return mean_B
 
+# main function
 
-# ======================================================
-# MAIN
-# ======================================================
 if __name__ == "__main__":
 
     study = optuna.create_study(
