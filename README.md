@@ -132,22 +132,63 @@ All plots are saved to:
 ## Evaluation Metric
 Blocking rate per episode:
 
-\[
+$$
 B = \frac{1}{T}\sum_{t=0}^{T-1} b_t
-\]
+$$
 
 where:
-- \(b_t = 1\) if request \(t\) is blocked, else 0  
-- \(T = 100\) requests per episode  
+- $b_t = 1$ if request $t$ is blocked, else 0  
+- $T = 100$ requests per episode  
 
 Please note that the Blocking rate values are reported as **fractions** (e.g., 0.03 = 3%).
 
 ---
 
+## Results
+
+Below are the **six required plots** (three per capacity setting). All plots are generated using a 10-episode moving average where applicable.
+
+### Capacity = 10
+
+#### Learning Curve (Training)
+![Cap10 Learning Curve](results/plots/cap10_run10_learning_curve.png)  
+*Shows a steady improvement in average episodic reward under tighter capacity constraints.*
+
+#### Blocking Rate Curve (Training)
+![Cap10 Blocking Curve](results/plots/cap10_run10_blocking_curve.png)  
+*Exhibits a decreasing trend in blocking rate as the agent learns to take better routing decisions.*
+
+#### Blocking Rate Curve (Evaluation)
+![Cap10 Eval Blocking Curve](results/plots/cap10_run10_eval_blocking_curve.png)  
+*Evaluation on unseen requests using deterministic policy*
+
+### Capacity = 20
+
+#### Learning Curve (Training)
+![Cap20 Learning Curve](results/plots/cap20_run10_learning_curve.png)  
+*Exhibits a swift convergence to near-optimal reward due to higher available capacity.*
+
+#### Blocking Rate Curve (Training)
+![Cap20 Blocking Curve](results/plots/cap20_run10_blocking_curve.png)  
+*Blocking rate remains close to zero for most of the episodes, indicating enough resources.*
+
+#### Blocking Rate Curve (Evaluation)
+![Cap20 Eval Blocking Curve](results/plots/cap20_run10_eval_blocking_curve.png)  
+*Almost near to zero blocking during evaluation, confirming strong generalization with higher capacity.*
+
+---
+
+## Training Setup and Hyperparameter Tuning
+- Algorithm: **DQN - Stable-Baselines3**
+- Separate agents trained for capacities 10 and 20
+- **Optuna** was used for systematic hyperparameter tuning (80 trials)
+- Each trial was evaluated over multiple runs to account for stochasticity
+- Final configuration was then selected based on : **lowest mean blocking rate**
+
 ## Notes on Data Usage 
 - Training uses files only from: `data/train/`  
 - Evaluation uses files only from: `data/eval/`  
-- The tuning script trains only on the `data/train/` and evaluates on `data/eval/` (never trains on eval).
+- The tuning script trains only on the `data/train/` and evaluates on `data/eval/`
 
 ---
 
