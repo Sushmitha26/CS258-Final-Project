@@ -151,29 +151,29 @@ Below are the **six required plots** (three per capacity setting). All plots are
 ### Capacity = 10
 
 #### Learning Curve (Training)
-![Cap10 Learning Curve](results/plots/cap10_run10_learning_curve.png)  
+![Cap10 Learning Curve](project/results/plots/cap10_run10_learning_curve.png)  
 *Shows a steady improvement in average episodic reward under tighter capacity constraints.*
 
 #### Blocking Rate Curve (Training)
-![Cap10 Blocking Curve](results/plots/cap10_run10_blocking_curve.png)  
+![Cap10 Blocking Curve](project/results/plots/cap10_run10_blocking_curve.png)  
 *Exhibits a decreasing trend in blocking rate as the agent learns to take better routing decisions.*
 
 #### Blocking Rate Curve (Evaluation)
-![Cap10 Eval Blocking Curve](results/plots/cap10_run10_eval_blocking_curve.png)  
+![Cap10 Eval Blocking Curve](project/results/plots/cap10_run10_eval_blocking_curve.png)  
 *Evaluation on unseen requests using deterministic policy*
 
 ### Capacity = 20
 
 #### Learning Curve (Training)
-![Cap20 Learning Curve](results/plots/cap20_run10_learning_curve.png)  
+![Cap20 Learning Curve](project/results/plots/cap20_run10_learning_curve.png)  
 *Exhibits a swift convergence to near-optimal reward due to higher available capacity.*
 
 #### Blocking Rate Curve (Training)
-![Cap20 Blocking Curve](results/plots/cap20_run10_blocking_curve.png)  
+![Cap20 Blocking Curve](project/results/plots/cap20_run10_blocking_curve.png)  
 *Blocking rate remains close to zero for most of the episodes, indicating enough resources.*
 
 #### Blocking Rate Curve (Evaluation)
-![Cap20 Eval Blocking Curve](results/plots/cap20_run10_eval_blocking_curve.png)  
+![Cap20 Eval Blocking Curve](project/results/plots/cap20_run10_eval_blocking_curve.png)  
 *Almost near to zero blocking during evaluation, confirming strong generalization with higher capacity.*
 
 ---
@@ -206,3 +206,4 @@ Below are the **six required plots** (three per capacity setting). All plots are
 - A. Asiri and B. Wang, “Deep Reinforcement Learning for QoT-Aware Routing, Modulation, and Spectrum Assignment in Elastic Optical Networks,” *JLT*, 2025.  
 - Stable-Baselines3 documentation  
 - Optuna documentation
+
