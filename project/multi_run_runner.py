@@ -36,9 +36,8 @@ if __name__ == "__main__":
 
         tag = f"run{run}"
 
-        # ==================================================
-        # CAPACITY = 20
-        # ==================================================
+        # Capacity = 20
+       
         r20, b20 = train_dqn(
             train_files=train_files,
             capacity=20,
@@ -55,9 +54,8 @@ if __name__ == "__main__":
         )
         plot_eval_curve(eval_curve20, f"cap20_{tag}")
 
-        # ==================================================
-        # CAPACITY = 10
-        # ==================================================
+        # Capacity = 10
+        
         r10, b10 = train_dqn(
             train_files=train_files,
             capacity=10,
@@ -78,10 +76,8 @@ if __name__ == "__main__":
 
         print(f"Run {run} summary:  cap20={eval_B20:.4f},  cap10={eval_B10:.4f}")
 
-
-    # ==================================================
-    # SAVE SUMMARY CSV
-    # ==================================================
+    # generate summary csv
+    
     with open("results/multi_run/summary.csv", "w", newline="") as f:
         writer = csv.writer(f)
         writer.writerow(["Run", "Cap20_BlockingRate", "Cap10_BlockingRate"])
